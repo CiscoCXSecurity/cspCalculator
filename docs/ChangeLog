@@ -3,6 +3,9 @@
 * Tidied up code in src/html/js/cspCalculatr.js
 * Added new UI components src/html/js/about.js, src/html/js/copyright.js and
   src/html/js/htmlEditor.js
+* Added supporting CSS files src/html/styles/cspCalculator.css,
+  src/html/styles/about.css, src/html/styles/copyright.css and
+  src/html/styles/htmlEditor.css
 
 0.0 - 0.1
 
