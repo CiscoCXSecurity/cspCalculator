@@ -6,6 +6,8 @@
 * Added supporting CSS files src/html/styles/cspCalculator.css,
   src/html/styles/about.css, src/html/styles/copyright.css and
   src/html/styles/htmlEditor.css
+* Updated src/html/examples/php/index.php to use new UI components and to
+  allow for dynamic HTML body changes
 
 0.0 - 0.1
 
