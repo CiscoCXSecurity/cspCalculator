@@ -1,3 +1,9 @@
+0.1 - 0.2
+
+* Tidied up code in src/html/js/cspCalculatr.js
+* Added new UI components src/html/js/about.js, src/html/js/copyright.js and
+  src/html/js/htmlEditor.js
+
 0.0 - 0.1
 
 * Initial PoC

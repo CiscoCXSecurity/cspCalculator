@@ -1,5 +1,5 @@
 /*
-$Header: /var/lib/cvsd/var/lib/cvsd/cspCalculator/src/html/js/cspCalculator.js,v 1.3 2013-04-22 22:11:06 timb Exp $
+$Header: /var/lib/cvsd/var/lib/cvsd/cspCalculator/src/html/js/cspCalculator.js,v 1.4 2013-11-28 23:36:40 timb Exp $
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,32 +23,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 cspCalculator = {};
 
 cspCalculator.directives = [ "default-src",
-"connect-src",
-"font-src",
-"frame-src",
-"img-src",
-"media-src",
-"object-src",
-"script-src",
-"style-src",
-"sandbox"];
+	"connect-src",
+	"font-src",
+	"frame-src",
+	"img-src",
+	"media-src",
+	"object-src",
+	"script-src",
+	"style-src",
+	"sandbox" ];
 //report-uri
 
-cspCalculator.getDirectiveValue = function(_directivename) {
-	cookies = document.cookie.split(";");
-	for (cookieCounter = 0; cookieCounter < cookies.length; cookieCounter ++) {
-		cookie = cookies[cookieCounter].trim().split("=");
-		if (cookie[0] == _directivename) {
-			return unescape(cookie[1]);
-		}
+cspCalculator.appendIfNeeded = function(_directiveinput, _directiveaddition) {
+	if (-1 === _directiveinput.value.indexOf(_directiveaddition)) {
+		_directiveinput.value += _directiveaddition;
 	}
+}
+
+cspCalculator.getRedirect = function(_url) {
+	// will we be redirected
+	// TODO unlikely - requires response analysis
+	return _url;
 }
 
 // Firefox is gash and won't accept a full URL for a policy
 cspCalculator.getProtocolDomain = function(_url) {
-	var matches = _url.match(/(.*?):\/\/(.*?)\//);
-	if (matches) {
-		if ((matches[1] + "://" + matches[2]) == (document.location.protocol + "//" + document.domain)) {
+	matches = _url.match(/(.*?):\/\/(.*?)\//);
+	if (null !== matches) {
+		if ((matches[1] + "://" + matches[2]) === (document.location.protocol + "//" + document.domain)) {
 			return "'self'";
 		} else {
 			return matches[1] + "://" + matches[2];
@@ -58,12 +60,22 @@ cspCalculator.getProtocolDomain = function(_url) {
 	}
 }
 
-cspCalculator.calculate = function(event) {
-	switch (event.target.id) {
-		case "calculate-default-src":
+cspCalculator.getDirectiveValue = function(_directivename) {
+	cookies = document.cookie.split(";");
+	for (cookieCounter = 0; cookieCounter < cookies.length; cookieCounter ++) {
+		cookie = cookies[cookieCounter].trim().split("=");
+		if (cookie[0] === _directivename) {
+			return decodeURIComponent(cookie[1]);
+		}
+	}
+}
+
+cspCalculator.calculate = function(_event, _this) {
+	switch (_this.id) {
+		case "cspCalculatorCalculateButton-default-src":
 			// all of the below
 			break;
-		case "calculate-connect-src":
+		case "cspCalculatorCalculateButton-connect-src":
 			// script referenced XML HTTP request
 			// TODO unlikely - requires script analysis
 			// script referenced web socket
@@ -71,112 +83,121 @@ cspCalculator.calculate = function(event) {
 			// script referenced event source
 			// TODO unlikely - requires script analysis
 			break;
-		case "calculate-font-src":
-			// css referenced font
+		case "cspCalculatorCalculateButton-font-src":
+			// CSS referenced font
 			// TODO unlikely - requires style analysis
 			break;
-		case "calculate-frame-src":
-			directiveInput = document.getElementById("frame-src");
-			directiveInput.value = "";
+		case "cspCalculatorCalculateButton-frame-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-frame-src");
+			cspCalculatorDirectiveInput.value = "";
 			frames = document.getElementsByTagName("frame");
 			for (frameCounter = 0; frameCounter < frames.length; frameCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(frames[frameCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(frames[frameCounter].src)) + " ");
 			}
 			frames = document.getElementsByTagName("iframe");
-			directiveInput = document.getElementById("frame-src");
 			for (frameCounter = 0; frameCounter < frames.length; frameCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(frames[frameCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(frames[frameCounter].src)) + " ");
 			}
 			break;
-		case "calculate-img-src":
-			directiveInput = document.getElementById("img-src");
-			directiveInput.value = "";
+		case "cspCalculatorCalculateButton-img-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-img-src");
+			cspCalculatorDirectiveInput.value = "";
 			// img
 			images = document.getElementsByTagName("img");
 			for (imageCounter = 0; imageCounter < images.length; imageCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(images[imageCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(images[imageCounter].src)) + " ");
 			}
 			// link
 			links = document.getElementsByTagName("link");
 			for (linkCounter = 0; linkCounter < links.length; linkCounter ++) {
 				// TODO check it's an image
-				directiveInput.value += cspCalculator.getProtocolDomain(links[linkCounter].href) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(links[linkCounter].href)) + " ");
 			}
 			// css referenced img
 			// TODO unlikely - requires style analysis
 			break;
-		case "calculate-media-src":
+		case "cspCalculatorCalculateButton-media-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-media-src");
+			cspCalculatorDirectiveInput.value = "";
 			// video
 			videos = document.getElementsByTagName("img");
 			for (videoCounter = 0; videoCounter < videos.length; videoCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(videos[videoCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(videos[videoCounter].src)) + " ");
 			}
 			// audio
 			audios = document.getElementsByTagName("audio");
 			for (imageCounter = 0; imageCounter < audio.length; imageCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(audios[imageCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(audios[imageCounter].src)) + " ");
 			}
 			// source
-			sources = document.getElementsByTagName("sorce");
+			sources = document.getElementsByTagName("source");
 			for (sourceCounter = 0; sourceCounter < sources.length; sourceCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(sources[sourceCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(sources[sourceCounter].src)) + " ");
 			}
 			// track
 			tracks = document.getElementsByTagName("track");
 			for (trackCounter = 0; trackCounter < tracks.length; trackCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(tracks[trackCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(tracks[trackCounter].src)) + " ");
 			}
 			break;
-		case "calculate-object-src":
-			directiveInput = document.getElementById("object-src");
-			directiveInput.value = "";
+		case "cspCalculatorCalculateButton-object-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-object-src");
+			cspCalculatorDirectiveInput.value = "";
 			// object
 			objects = document.getElementsByTagName("object");
 			for (objectCounter = 0; objectCounter < objects.length; objectCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(objects[objectCounter].data) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(objects[objectCounter].data)) + " ");
 			}
 			// embed
 			embeds = document.getElementsByTagName("embed");
 			for (embedCounter = 0; embedCounter < embeds.length; embedCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(embeds[embedCounter].src) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(embeds[embedCounter].src)) + " ");
 			}
 			// applet
 			applets = document.getElementsByTagName("applet");
 			for (appletCounter = 0; appletCounter < applets.length; appletCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(applets[appletCounter].archive) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(applets[appletCounter].archive)) + " ");
 			}
 			break;
-		case "calculate-script-src":
-			directiveInput = document.getElementById("script-src");
-			directiveInput.value = "";
+		case "cspCalculatorCalculateButton-script-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-script-src");
+			cspCalculatorDirectiveInput.value = "";
 			// script
 			scripts = document.getElementsByTagName("script");
 			for (scriptCounter = 0; scriptCounter < scripts.length; scriptCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(scripts[scriptCounter].src) + " ";
+				if ("" === scripts[scriptCounter].src) {
+					cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, "'unsafe-inline' ");
+				} else {
+					cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(scripts[scriptCounter].src)) + " ");
+				}
 			}
 			// xsl:include
 			xslincludes = document.getElementsByTagName("xsl:include");
 			for (xslincludeCounter = 0; xslincludeCounter < xslincludes.length; xslincludeCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(xslincludes[xslincludeCounter].href) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(xslincludes[xslincludeCounter].href)) + " ");
 			}
 			// xsl:import
 			xslimports = document.getElementsByTagName("xsl:import");
 			for (xslimportCounter = 0; xslimportCounter < xslimports.length; xslimportCounter ++) {
-				directiveInput.value += cspCalculator.getProtocolDomain(xslimports[xslimportCounter].href) + " ";
+				cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(xslimports[xslimportCounter].href)) + " ");
 			}
 			// unsafe-eval
 			// TODO unlikely - requires script analysis
-			// unsafe-inline
-			// TODO unlikely - requires script analysis
+			// script hashes
+			// TODO unlikely - requires crypto in the browser
 			break;
-		case "calculate-style-src":
+		case "cspCalculatorCalculateButton-style-src":
+			cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-style-src");
+			cspCalculatorDirectiveInput.value = "";
 			// link
 			links = document.getElementsByTagName("link");
-			directiveInput = document.getElementById("style-src");
-			directiveInput.value = "";
 			for (linkCounter = 0; linkCounter < links.length; linkCounter ++) {
 				// TODO check it's a style sheet
-				directiveInput.value += cspCalculator.getProtocolDomain(links[linkCounter].href) + " ";
+				if ("" === links[linkCounter].href) {
+					cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, "'unsafe-inline' ");
+				} else {
+					cspCalculator.appendIfNeeded(cspCalculatorDirectiveInput, cspCalculator.getRedirect(cspCalculator.getProtocolDomain(links[linkCounter].href)) + " ");
+				}
 			}
 			// import
 			// TODO unlikely - requires style analysis
@@ -184,48 +205,73 @@ cspCalculator.calculate = function(event) {
 	}
 }
 
-cspCalculator.submit = function() {
+cspCalculator.apply = function(_event, _this) {
 	for (directiveCounter = 0; directiveCounter < cspCalculator.directives.length; directiveCounter ++) {
-		directiveInput = document.getElementById(cspCalculator.directives[directiveCounter]);
-		document.cookie = cspCalculator.directives[directiveCounter] + "=" + escape(directiveInput.value);
+		cspCalculatorDirectiveInput = document.getElementById("cspCalculatorDirectiveInput-" + cspCalculator.directives[directiveCounter]);
+		document.cookie = cspCalculator.directives[directiveCounter] + "=" + escape(cspCalculatorDirectiveInput.value);
 	}
+}
+
+cspCalculator.reset = function(_event, _this) {
+	for (directiveCounter = 0; directiveCounter < cspCalculator.directives.length; directiveCounter ++) {
+		document.cookie = cspCalculator.directives[directiveCounter] + "=";
+	}
+}
+
+cspCalculator.show = function(_event, _this) {
+	_this.style.height = "auto";
+	_this.childNodes.item("cspCalculatorHeader").textContent = "cspCalculator <<";
+}
+
+cspCalculator.hide = function(_event, _this) {
+	_this.style.height = "50px";
+	_this.childNodes.item("cspCalculatorHeader").textContent = "cspCalculator >>";
 }
 
 cspCalculator.render = function() {
 	cspCalculatorDiv = document.createElement("div");
-	cspCalculatorDiv.setAttribute("id", "cspCalculator");
-	disclaimer = document.createElement("p");
-	disclaimerLabel = document.createTextNode("Automatically calculated policies may be incomplete as referenced resources are not themselves analysed. The best way to ensure you have a complete set of content security policies defined is to use the application, and ensure it functions as expected. As a guide, the *sandbox* and *script-src* *'self'* policies are only likely to be needed for cspCalculator itself to operate (assuming no other Javascript is in use on this page).");
-	disclaimer.appendChild(disclaimerLabel);
-	form = document.createElement("form");
-	form.setAttribute("method", "POST");
+	cspCalculatorDiv.id = "cspCalculatorDiv";
+	cspCalculatorDiv.addEventListener("mouseenter", function(_event) { cspCalculator.show(_event, this); });
+	cspCalculatorDiv.addEventListener("mouseleave", function(_event) { cspCalculator.hide(_event, this); });
+	cspCalculatorHeader = document.createElement("h1");
+	cspCalculatorHeader.id = "cspCalculatorHeader";
+	cspCalculatorHeader.textContent = "cspCalculator >>";
+	cspCalculatorDiv.appendChild(cspCalculatorHeader);
+	cspCalculatorDisclaimer = document.createElement("p");
+	cspCalculatorDisclaimer.textContent = "Automatically calculated policies may be incomplete as referenced resources are not themselves analysed - this includes any redirects that might occur when referenced resources are fetched. The best way to ensure you have a complete set of content security policies defined is to use the application, and ensure it functions as expected. As a guide, the *sandbox* and *script-src* *'self'* policies are only likely to be needed for cspCalculator itself to operate (assuming no other Javascript is in use on this page).";
+	cspCalculatorDiv.appendChild(cspCalculatorDisclaimer);
+	cspCalculatorForm = document.createElement("form");
+	cspCalculatorForm.method = "POST";
 	for (directiveCounter = 0; directiveCounter < cspCalculator.directives.length; directiveCounter ++) {
-		directive = document.createElement("p");
-		directiveLabel = document.createTextNode(cspCalculator.directives[directiveCounter]);
-		directive.appendChild(directiveLabel);
-		directiveInput = document.createElement("input");
-		directiveInput.setAttribute("type", "text");
-		directiveInput.setAttribute("id", cspCalculator.directives[directiveCounter]);
-		directiveInput.setAttribute("value", cspCalculator.getDirectiveValue(cspCalculator.directives[directiveCounter]));
-		directive.appendChild(directiveInput);
-		calculateButton = document.createElement("button");
-		calculateButton.addEventListener("click", function(event) { cspCalculator.calculate(event); }, true);
-		calculateButton.setAttribute("type", "button");
-		calculateButton.setAttribute("id", "calculate-" + cspCalculator.directives[directiveCounter]);
-		calculateLabel = document.createTextNode("Calculate");
-		calculateButton.appendChild(calculateLabel);
-		directive.appendChild(calculateButton);
-		form.appendChild(directive);
+		cspCalculatorDirectiveLabel = document.createElement("p");
+		cspCalculatorDirectiveLabel.textContent = cspCalculator.directives[directiveCounter];
+		cspCalculatorForm.appendChild(cspCalculatorDirectiveLabel);
+		cspCalculatorDirectiveInput = document.createElement("input");
+		cspCalculatorDirectiveInput.id = "cspCalculatorDirectiveInput-" +cspCalculator.directives[directiveCounter];
+		cspCalculatorDirectiveInput.type = "text";
+		cspCalculatorDirectiveInput.value = cspCalculator.getDirectiveValue(cspCalculator.directives[directiveCounter]);
+		cspCalculatorForm.appendChild(cspCalculatorDirectiveInput);
+		cspCalculatorCalculateButton = document.createElement("button");
+		cspCalculatorCalculateButton.id = "cspCalculatorCalculateButton-" + cspCalculator.directives[directiveCounter];
+		cspCalculatorCalculateButton.type = "button";
+		cspCalculatorCalculateButton.textContent = "Calculate";
+		cspCalculatorCalculateButton.addEventListener("click", function(_event) { cspCalculator.calculate(_event, this); });
+		cspCalculatorForm.appendChild(cspCalculatorCalculateButton);
 	}
-	submit = document.createElement("p");
-	submitInput = document.createElement("input");
-	submitInput.addEventListener("click", function() { cspCalculator.submit(); }, true);
-	submitInput.setAttribute("type", "submit");
-	submitInput.setAttribute("value", "Regenerate");
-	submit.appendChild(submitInput);
-	form.appendChild(submit);
-	cspCalculatorDiv.appendChild(disclaimer);
-	cspCalculatorDiv.appendChild(form);
+	cspCalculatorSubmitLabel = document.createElement("p");
+	cspCalculatorSubmitLabel.textContent = "CSP";
+	cspCalculatorForm.appendChild(cspCalculatorSubmitLabel);
+	cspCalculatorApplySubmit = document.createElement("input");
+	cspCalculatorApplySubmit.type = "submit";
+	cspCalculatorApplySubmit.value = "Apply";
+	cspCalculatorApplySubmit.addEventListener("click", function(_event) { cspCalculator.apply(_event, this); });
+	cspCalculatorForm.appendChild(cspCalculatorApplySubmit);
+	cspCalculatorResetSubmit = document.createElement("input");
+	cspCalculatorResetSubmit.type = "submit";
+	cspCalculatorResetSubmit.value = "Reset";
+	cspCalculatorResetSubmit.addEventListener("click", function(_event) { cspCalculator.reset(_event, this); });
+	cspCalculatorForm.appendChild(cspCalculatorResetSubmit);
+	cspCalculatorDiv.appendChild(cspCalculatorForm);
 	document.getElementsByTagName("body")[0].appendChild(cspCalculatorDiv);
 }
 
