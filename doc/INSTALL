@@ -1,6 +1,7 @@
 To install:
 
-1) ...
+1) Copy styles and js from src/html to your web root
+2) Copy index.php from src/html/examples/php to your web root
 
 The latest version of cspCalculator can always be found at
 <http://www.nth-dimension.org.uk/>.
