@@ -1,10 +1,11 @@
 0.2 - 0.3
 
 * Added doc/AUTHORS
+* Setting svn:keywords
 
 0.1 - 0.2
 
-* Tidied up code in src/html/js/cspCalculatr.js
+* Tidied up code in src/html/js/cspCalculator.js
 * Added new UI components src/html/js/about.js, src/html/js/copyright.js and
   src/html/js/htmlEditor.js
 * Added supporting CSS files src/html/styles/cspCalculator.css,
