@@ -1,5 +1,5 @@
 /*
-$Header: /var/lib/cvsd/var/lib/cvsd/cspCalculator/src/html/js/about.js,v 1.1 2013-11-28 23:36:40 timb Exp $
+$Revision$
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

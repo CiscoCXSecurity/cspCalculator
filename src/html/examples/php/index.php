@@ -1,6 +1,6 @@
 <?php
 	/*
-	$Header: /var/lib/cvsd/var/lib/cvsd/cspCalculator/src/html/examples/php/index.php,v 1.4 2013-11-28 23:49:12 timb Exp $
+	$Revision$
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
